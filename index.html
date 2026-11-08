@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#0a1220" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <title>SAO · Aincrad Online — Open World</title>
+</head>
+<body>
+  <div id="app">
+    <canvas id="scene"></canvas>
+    <div id="vignette"></div>
+    <div id="damage-layer"></div>
+
+    <div id="hud" class="hidden">
+      <div class="hud-bars">
+        <div class="name-row">
+          <span class="player-name">KIRITO</span>
+          <span class="player-level" id="player-level">Lv. 1</span>
+          <span class="player-class">SOLO · SWORDSMAN</span>
+        </div>
+        <div class="bar hp-bar">
+          <div class="bar-fill" id="hp-fill"></div>
+          <div class="bar-gloss"></div>
+          <span class="bar-label" id="hp-label">140 / 140</span>
+        </div>
+        <div class="bar mp-bar">
+          <div class="bar-fill" id="mp-fill"></div>
+          <span class="bar-label" id="mp-label">80 / 80</span>
+        </div>
+        <div class="bar stam-bar">
+          <div class="bar-fill" id="stam-fill"></div>
+        </div>
+      </div>
+
+      <div id="zone-banner">
+        <span class="zone-sub">AINCRAD · FLOOR 1</span>
+        <span class="zone-name" id="zone-name">TOWN OF BEGINNINGS</span>
+      </div>
+
+      <div class="minimap-wrap">
+        <canvas id="minimap" width="240" height="240"></canvas>
+        <div class="minimap-ring"></div>
+        <div class="compass-n">N</div>
+      </div>
+
+      <div id="quest-tracker">
+        <div class="quest-head"><span class="quest-diamond">◆</span> QUEST</div>
+        <div class="quest-title" id="quest-title">Boars of the Beginning</div>
+        <div class="quest-objective" id="quest-objective">Slay Frenzy Boars <b>0 / 6</b></div>
+      </div>
+
+      <div class="hud-bottom-left">
+        <div id="col-display"><span class="col-icon">◈</span> <b id="col-value">0</b> <span class="col-unit">COL</span></div>
+        <div id="xp-strip"><div id="xp-fill"></div><span id="xp-label">EXP 0 / 90</span></div>
+      </div>
+
+      <div id="interact-prompt" class="hidden">
+        <span class="key">E</span><span id="interact-text">Talk to Argo</span>
+      </div>
+
+      <div id="combo-display" class="hidden">
+        <span id="combo-num">2</span><span class="combo-label">HIT<br>COMBO</span>
+      </div>
+
+      <div id="toasts"></div>
+    </div>
+
+    <div id="touch-controls" class="hidden">
+      <div id="joystick-zone">
+        <div id="joystick"><div id="joystick-nub"></div></div>
+      </div>
+      <div id="look-zone"></div>
+      <div id="action-buttons">
+        <button id="btn-potion" class="act small" aria-label="Potion"><span class="icon">⚗</span><span class="count" id="potion-count">3</span></button>
+        <button id="btn-skill3" class="act skill" data-skill="2" aria-label="Lightning Fall"><span class="icon">⚡</span><span class="cd"></span><span class="keyhint">3</span></button>
+        <button id="btn-skill2" class="act skill" data-skill="1" aria-label="Vorpal Strike"><span class="icon">✶</span><span class="cd"></span><span class="keyhint">2</span></button>
+        <button id="btn-skill1" class="act skill" data-skill="0" aria-label="Horizontal Arc"><span class="icon">◗</span><span class="cd"></span><span class="keyhint">1</span></button>
+        <button id="btn-dodge" class="act dodge" aria-label="Dodge"><span class="icon">➤</span><span class="keyhint">SPACE</span></button>
+        <button id="btn-attack" class="act attack" aria-label="Attack"><span class="slash-icon">⚔</span><span class="attack-label">SLASH</span></button>
+      </div>
+      <button id="btn-menu" class="menu-btn" aria-label="Menu"><span>MENU</span></button>
+      <div id="hint-strip">MOVE · LOOK AROUND · SLASH TO FIGHT</div>
+    </div>
+
+    <div id="start-screen">
+      <div class="start-scan"></div>
+      <div class="start-grid"></div>
+      <div class="start-content">
+        <div class="start-kicker">AINCRAD · FLOOR 01</div>
+        <h1 class="logo">SWORD<span>ART</span><em>ONLINE</em></h1>
+        <div class="start-sub">— AINCRAD ONLINE · OPEN WORLD —</div>
+        <div class="start-tagline">«Si esto es un juego, entonces existe un lugar al que puedo volver.»</div>
+        <button id="start-btn" class="start-btn"><span>LINK START</span></button>
+        <div class="start-controls">
+          <div><b>MOVE</b> WASD / joystick</div>
+          <div><b>LOOK</b> mouse drag / swipe</div>
+          <div><b>SLASH</b> click / button</div>
+          <div><b>SKILLS</b> 1 · 2 · 3</div>
+          <div><b>DODGE</b> space</div>
+          <div><b>MENU</b> tab</div>
+        </div>
+        <div class="start-note">A fan-made browser tribute • best with headphones</div>
+      </div>
+      <div class="start-footer">SAO — AINCRAD ONLINE</div>
+    </div>
+
+    <div id="menu-screen" class="hidden">
+      <div class="menu-panel">
+        <div class="menu-head">
+          <div class="menu-title">MENU</div>
+          <div class="menu-player"><span id="menu-name">KIRITO</span><span id="menu-level">Lv. 1</span></div>
+          <button id="menu-close" aria-label="Close">✕</button>
+        </div>
+        <div class="menu-body">
+          <nav class="menu-tabs">
+            <button class="mtab active" data-tab="status"><span>01</span>STATUS</button>
+            <button class="mtab" data-tab="skills"><span>02</span>SKILLS</button>
+            <button class="mtab" data-tab="items"><span>03</span>ITEMS</button>
+            <button class="mtab" data-tab="quests"><span>04</span>QUESTS</button>
+            <button class="mtab" data-tab="map"><span>05</span>MAP</button>
+          </nav>
+          <div class="menu-pages">
+            <section class="mpage active" data-page="status">
+              <div class="status-top">
+                <div class="avatar-frame"><div class="avatar-silhouette"><div class="av-head"></div><div class="av-body"></div><div class="av-sword"></div></div><div class="avatar-lv" id="avatar-lv">1</div></div>
+                <div class="status-info">
+                  <h2>KIRITO <small>· Beater</small></h2>
+                  <p class="status-quote">«Solo player. Black swordsman.»</p>
+                  <div class="stat-grid">
+                    <div><span>HP</span><b id="stat-hp">140</b></div>
+                    <div><span>MP</span><b id="stat-mp">80</b></div>
+                    <div><span>ATTACK</span><b id="stat-atk">32</b></div>
+                    <div><span>DEFENSE</span><b id="stat-def">8</b></div>
+                    <div><span>CRIT</span><b id="stat-crit">12%</b></div>
+                    <div><span>COL</span><b id="stat-col">0</b></div>
+                  </div>
+                  <div class="stat-xp"><span>EXP</span><div class="stat-xp-bar"><div id="stat-xp-fill"></div></div><b id="stat-xp-label">0 / 90</b></div>
+                </div>
+              </div>
+              <div class="equip-row">
+                <div class="equip"><span class="eq-icon">🗡</span><div><b id="equip-main">Elucidator</b><small>One-handed sword · +10 ATK</small></div></div>
+                <div class="equip"><span class="eq-icon">🧥</span><div><b>Blackwyrm Coat</b><small>Coat · +8 DEF</small></div></div>
+                <div class="equip"><span class="eq-icon">◈</span><div><b id="equip-off">Empty off-hand</b><small id="equip-off-sub">Reach Lv. 4 to unlock Dual Blades</small></div></div>
+              </div>
+            </section>
+
+            <section class="mpage" data-page="skills">
+              <h3 class="page-title">SWORD SKILLS <small>剑技</small></h3>
+              <div class="skill-list" id="skill-list"></div>
+              <p class="page-note">Sword skills spend MP. Chain basic attacks to build a combo multiplier.</p>
+            </section>
+
+            <section class="mpage" data-page="items">
+              <h3 class="page-title">INVENTORY <small>道具</small></h3>
+              <div class="item-list">
+                <div class="item-card">
+                  <div class="item-icon potion">⚗</div>
+                  <div class="item-info"><b>Healing Potion</b><small>Restores 70 HP · usable in battle</small></div>
+                  <div class="item-qty">× <span id="item-potions">3</span></div>
+                  <button class="item-use" id="use-potion">USE</button>
+                </div>
+                <div class="item-card">
+                  <div class="item-icon crystal">◈</div>
+                  <div class="item-info"><b>Teleport Crystal</b><small>Return to the Town of Beginnings</small></div>
+                  <div class="item-qty">× <span id="item-crystals">1</span></div>
+                  <button class="item-use" id="use-crystal">USE</button>
+                </div>
+              </div>
+              <div class="shop-row">
+                <div><b>Argo's Sundries</b><small>Healing Potion — 60 col</small></div>
+                <button class="item-use buy" id="buy-potion">BUY · 60</button>
+              </div>
+            </section>
+
+            <section class="mpage" data-page="quests">
+              <h3 class="page-title">QUEST LOG <small>任务</small></h3>
+              <div id="quest-list" class="quest-list"></div>
+            </section>
+
+            <section class="mpage" data-page="map">
+              <h3 class="page-title">FLOOR 1 · MAP <small>艾恩葛朗特</small></h3>
+              <div class="big-map-wrap"><canvas id="big-map" width="640" height="640"></canvas><div class="map-legend">
+                <span><i class="dot you"></i>You</span><span><i class="dot npc"></i>Argo</span><span><i class="dot enemy"></i>Enemies</span><span><i class="dot quest"></i>Objective</span>
+              </div></div>
+              <p class="page-note">The Beginning Plains lie north. Wolfpine Forest east. The Kobold Ruins west, beyond the ridge.</p>
+            </section>
+          </div>
+        </div>
+        <div class="menu-foot"><span>TAB / ESC to close</span><span>AUTO-SAVE ON</span></div>
+      </div>
+    </div>
+
+    <div id="death-screen" class="hidden">
+      <div class="death-title">YOU HAVE DIED</div>
+      <div class="death-sub">The link is not severed. Not yet.</div>
+      <button id="respawn-btn" class="start-btn"><span>RESPAWN</span></button>
+    </div>
+
+    <div id="victory-screen" class="hidden">
+      <div class="victory-kicker">FLOOR 01 · CLEARED</div>
+      <div class="victory-title">THE KOBOLD LORD FALLS</div>
+      <div class="victory-sub">Aincrad opens its next path. Elucidator has been reforged.</div>
+      <button id="victory-btn" class="start-btn"><span>CONTINUE</span></button>
+    </div>
+
+    <div id="loading">
+      <div class="load-mark">◈</div>
+      <div class="load-text">GENERATING AINCRAD</div>
+      <div class="load-bar"><div id="load-fill"></div></div>
+    </div>
+  </div>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
