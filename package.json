@@ -1,0 +1,18 @@
+{
+  "name": "aincrad-online",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Aincrad Online — a SAO-inspired open-world 3D action RPG for mobile and desktop.",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build --base ./",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "three": "0.180.0"
+  },
+  "devDependencies": {
+    "vite": "^7.3.7"
+  }
+}

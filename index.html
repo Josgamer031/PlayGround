@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+<meta name="theme-color" content="#0b1220" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="description" content="Aincrad Online — un RPG de acción 3D de mundo abierto inspirado en Sword Art Online. Explora la isla flotante, caza monstruos y derrota al Señor Kobold." />
+<title>Aincrad Online · Open World RPG</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230b1220'/%3E%3Cpath d='M32 9l5 16 14 5-14 5-5 18-5-18-14-5 14-5z' fill='%237fe7ff'/%3E%3C/svg%3E" />
+</head>
+<body>
+<div id="app">
+  <canvas id="game" aria-label="Mundo 3D de Aincrad Online"></canvas>
+
+  <!-- ══════════════ HUD ══════════════ -->
+  <div id="hud" aria-hidden="false">
+    <div id="topbar">
+      <div class="panel" id="player-panel">
+        <div class="avatar">
+          <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 3l9 5v8c0 6-4 10-9 13-5-3-9-7-9-13V8z" fill="none" stroke="currentColor" stroke-width="2"/><path d="M16 10v10M11 15h10" stroke="currentColor" stroke-width="2"/></svg>
+          <span id="player-level">1</span>
+        </div>
+        <div class="bars">
+          <div class="name-row"><span id="player-name">KIRITO</span><span id="player-col" class="col">ⓒ 0</span></div>
+          <div class="hp-track"><div id="player-hp-fill" class="hp-fill"></div><span id="player-hp-text">100 / 100</span></div>
+          <div class="xp-track"><div id="player-xp-fill"></div></div>
+        </div>
+      </div>
+
+      <div id="target-panel" class="panel hidden">
+        <div class="target-head"><span id="target-name">FRENZY BOAR</span><span id="target-lvl">Lv.1</span></div>
+        <div class="hp-track small"><div id="target-hp-fill" class="hp-fill enemy"></div></div>
+      </div>
+
+      <div id="topright">
+        <div id="minimap-wrap" class="panel">
+          <canvas id="minimap" width="176" height="176"></canvas>
+          <div class="compass">N</div>
+          <div id="minimap-zone">CIUDAD DEL INICIO</div>
+        </div>
+        <button id="btn-menu" class="icon-btn" aria-label="Menú">
+          <svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <div id="quest-tracker" class="panel">
+      <div class="quest-kicker">MISIÓN</div>
+      <div id="quest-title">El despertar</div>
+      <div id="quest-objective">Habla con Klein en la plaza</div>
+      <div id="quest-count" class="hidden">0 / 5</div>
+    </div>
+
+    <div id="boss-bar" class="hidden">
+      <div class="boss-name">ILLFANG · SEÑOR KOBOLD</div>
+      <div class="hp-track boss"><div id="boss-hp-fill" class="hp-fill boss"></div></div>
+      <div id="boss-phase" class="boss-phase">FASE I</div>
+    </div>
+
+    <div id="interact-prompt" class="hidden">
+      <span class="key">E</span><span id="interact-text">HABLAR</span>
+    </div>
+
+    <div id="toasts"></div>
+    <div id="vignette"></div>
+
+    <!-- touch + buttons -->
+    <div id="controls">
+      <div id="stick-zone" aria-label="Joystick de movimiento">
+        <div id="stick-base">
+          <div id="stick-knob"></div>
+          <div class="stick-ring"></div>
+        </div>
+        <div class="stick-hint">MOVERSE</div>
+      </div>
+
+      <div id="action-cluster">
+        <button class="act skill" data-action="skill" aria-label="Habilidad Starburst">
+          <svg viewBox="0 0 32 32"><path d="M16 3l3 10 10 3-10 3-3 10-3-10-10-3 10-3z" fill="currentColor"/></svg>
+          <span class="lbl">SKILL</span>
+          <span class="cd" id="cd-skill"></span>
+        </button>
+        <button class="act small-btn jump" data-action="jump" aria-label="Saltar">
+          <svg viewBox="0 0 24 24"><path d="M12 19V6M6 12l6-6 6 6" stroke="currentColor" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <button class="act small-btn dodge" data-action="dodge" aria-label="Esquivar">
+          <svg viewBox="0 0 24 24"><path d="M4 12h12M11 6l6 6-6 6" stroke="currentColor" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span class="cd" id="cd-dodge"></span>
+        </button>
+        <button class="act small-btn lock" data-action="lock" aria-label="Fijar objetivo">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4" stroke="currentColor" stroke-width="2"/></svg>
+        </button>
+        <button class="act small-btn potion" data-action="potion" aria-label="Poción">
+          <svg viewBox="0 0 24 24"><path d="M10 3h4v5l4 9a2 2 0 01-2 4H8a2 2 0 01-2-4l4-9z" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M7.5 14h9" stroke="currentColor" stroke-width="1.8"/></svg>
+          <span class="count" id="potion-count">3</span>
+        </button>
+        <button class="act interact-btn hidden" data-action="interact" id="btn-interact" aria-label="Interactuar">
+          <svg viewBox="0 0 24 24"><path d="M4 6h16v10H9l-5 4z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+          <span class="lbl" id="btn-interact-label">HABLAR</span>
+        </button>
+        <button class="act attack" data-action="attack" aria-label="Atacar">
+          <svg viewBox="0 0 48 48"><path d="M38 6L18 26M38 6h-8M38 6v8M18 26l-3 7-5 3 3-5 7-3z" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 36l-5 5" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>
+          <span class="lbl">ATACAR</span>
+        </button>
+      </div>
+    </div>
+
+    <div id="hint-move" class="hint">Arrastra para girar la cámara · Toca ATACAR para combatir</div>
+  </div>
+
+  <!-- ══════════════ TITLE ══════════════ -->
+  <div id="title-screen">
+    <div class="title-vignette"></div>
+    <div class="title-inner">
+      <div class="crest">
+        <svg viewBox="0 0 120 140" aria-hidden="true">
+          <path d="M60 6l44 20v46c0 30-20 48-44 62C36 120 16 102 16 72V26z" fill="none" stroke="currentColor" stroke-width="2.5" opacity=".85"/>
+          <path d="M60 22l32 14v35c0 22-14 36-32 47-18-11-32-25-32-47V36z" fill="none" stroke="currentColor" stroke-width="1" opacity=".4"/>
+          <path d="M60 34v66M38 70l22-24 22 24" role="none" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M46 108l14-14 14 14" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="title-kicker">UN MUNDO ABIERTO DE REALIDAD VIRTUAL</div>
+      <h1 class="logo">AINCRAD<span>ONLINE</span></h1>
+      <p class="tagline">La espada es tu voluntad. La isla flotante, tu mundo.</p>
+      <div class="title-actions">
+        <button id="btn-start" class="primary-btn">INICIAR AVENTURA</button>
+        <button id="btn-continue" class="ghost-btn hidden">CONTINUAR PARTIDA</button>
+      </div>
+      <div class="title-meta">
+        <span>3ª PERSONA</span><span class="dot"></span><span>MUNDO ABIERTO</span><span class="dot"></span><span>COMBATE DE ESPADA</span>
+      </div>
+      <div class="title-controls" id="title-controls">
+        <div><b>Móvil</b> joystick + arrastra la cámara</div>
+        <div><b>PC</b> WASD · ratón · J atacar · K skill · Espacio saltar · Shift dash</div>
+      </div>
+    </div>
+    <div class="title-footer">
+      <span>Inspirado en Sword Art Online · Proyecto fan no oficial</span>
+      <button id="btn-title-sound" class="sound-toggle" aria-label="Sonido">SONIDO: SÍ</button>
+    </div>
+  </div>
+
+  <!-- ══════════════ DIALOG ══════════════ -->
+  <div id="dialog" class="hidden">
+    <div class="dialog-card">
+      <div class="dialog-portrait" id="dialog-portrait"></div>
+      <div class="dialog-body">
+        <div class="dialog-name" id="dialog-name">KLEIN</div>
+        <p id="dialog-text">...</p>
+        <div class="dialog-actions" id="dialog-actions"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════ PAUSE ══════════════ -->
+  <div id="pause" class="hidden">
+    <div class="menu-card">
+      <div class="menu-kicker">MENÚ DEL JUGADOR</div>
+      <h2>PAUSA</h2>
+      <div class="stats-grid">
+        <div><span>NIVEL</span><b id="pause-level">1</b></div>
+        <div><span>XP</span><b id="pause-xp">0</b></div>
+        <div><span>COL</span><b id="pause-col">0</b></div>
+        <div><span>BAJAS</span><b id="pause-kills">0</b></div>
+      </div>
+      <div class="menu-row">
+        <button id="btn-resume" class="primary-btn small">CONTINUAR</button>
+        <button id="btn-sound" class="ghost-btn small">SONIDO: SÍ</button>
+      </div>
+      <div class="quality-row"><span>CALIDAD</span>
+        <div class="seg" id="quality-seg">
+          <button data-q="auto" class="active">AUTO</button>
+          <button data-q="low">BAJA</button>
+          <button data-q="high">ALTA</button>
+        </div>
+      </div>
+      <button id="btn-reset" class="danger-btn">BORRAR PARTIDA</button>
+      <div class="menu-hint">Pulsa ESC o P para volver al juego</div>
+    </div>
+  </div>
+
+  <!-- ══════════════ DEATH ══════════════ -->
+  <div id="death" class="hidden">
+    <div class="death-card">
+      <div class="death-kicker">TU LINK HA CAÍDO</div>
+      <h2>HAS SIDO DERROTADO</h2>
+      <p>Regresarás a la Fuente de la Plaza con parte de tu vitalidad.</p>
+      <button id="btn-respawn" class="primary-btn">VOLVER A LA PLAZA</button>
+    </div>
+  </div>
+
+  <!-- ══════════════ VICTORY ══════════════ -->
+  <div id="victory" class="hidden">
+    <div class="victory-card">
+      <div class="victory-kicker">¡MAZMORRA CONQUISTADA!</div>
+      <h2>ILLFANG HA CAÍDO</h2>
+      <p>Has liberado la isla del Señor Kobold. La espada <b>Lambent Light</b> es tuya.</p>
+      <div class="victory-stats">
+        <div><span>COL GANADO</span><b id="victory-col">0</b></div>
+        <div><span>NIVEL</span><b id="victory-level">1</b></div>
+      </div>
+      <button id="btn-victory" class="primary-btn">SEGUIR EXPLORANDO</button>
+    </div>
+  </div>
+
+  <!-- ══════════════ LOADING ══════════════ -->
+  <div id="loading">
+    <div class="load-logo">AINCRAD<span>ONLINE</span></div>
+    <div class="load-track"><div id="load-fill"></div></div>
+    <div id="load-label">CONECTANDO CON EL NEXO…</div>
+    <div class="load-tip">Consejo: esquiva con DASH justo antes del golpe enemigo.</div>
+  </div>
+
+  <div id="rotate-hint" class="hidden">
+    <div class="rotate-card">
+      <div class="rotate-icon">⟳</div>
+      <div>Gira tu dispositivo para una experiencia de mundo abierto a pantalla completa.</div>
+      <button id="btn-rotate-dismiss">SEGUIR ASÍ</button>
+    </div>
+  </div>
+
+  <div id="fatal" class="hidden"><div><h2>ERROR DE CONEXIÓN</h2><p id="fatal-text"></p></div></div>
+</div>
+<script type="module" src="/src/main.js"></script>
+</body>
+</html>
