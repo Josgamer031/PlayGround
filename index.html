@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <meta name="theme-color" content="#080b16" />
+    <meta name="description" content="Sword Art Online 3D — a fan-made Aincrad action experience. Dual blades, floor guardians, and a sky beyond the edge." />
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpath fill='%23080b16' d='M0 0h64v64H0z'/%3E%3Cpath fill='%2375edff' d='M31 5h3l4 37-5 13-5-13z'/%3E%3Cpath fill='none' stroke='%23d9b776' stroke-width='3' d='M17 37h30M22 44l10 13 10-13'/%3E%3C/svg%3E" />
+    <title>Sword Art Online 3D — Aincrad Ascension</title>
+  </head>
+  <body>
+    <div id="app"></div>
+    <div id="letterbox-top" class="letterbox"></div>
+    <div id="letterbox-bottom" class="letterbox"></div>
+
+    <!-- Loading -->
+    <div id="loader" class="screen">
+      <div class="loader-mark">
+        <svg viewBox="0 0 80 80" aria-hidden="true">
+          <path class="mark-ring" d="M40 4 70 22v36L40 76 10 58V22Z" />
+          <path class="mark-sword" d="M40 14 44 48 40 62 36 48Z" />
+          <path class="mark-guard" d="M29 49h22M31 56l9 12 9-12" />
+        </svg>
+      </div>
+      <div class="loader-wordmark">SWORD ART <span>ONLINE</span></div>
+      <div class="loader-sub">AINCRAD // SYSTEM INITIALIZATION</div>
+      <div class="loader-track"><div id="loader-bar"></div></div>
+      <div class="loader-status"><span id="loader-status">CONNECTING TO THE CARDINAL SYSTEM</span><span id="loader-percent">0%</span></div>
+    </div>
+
+    <!-- Title -->
+    <div id="title-screen" class="screen hidden">
+      <div class="title-vignette"></div>
+      <div class="title-left">
+        <div class="title-kicker"><span></span> FLOOR 75 <b>//</b> THE BLOODSTAIN</div>
+        <h1 class="title-logo" aria-label="Sword Art Online">
+          <span class="title-sword">SWORD</span>
+          <span class="title-art">ART</span>
+          <span class="title-online">ONLINE</span>
+        </h1>
+        <div class="title-sub"><span>AINCRAD</span> ASCENSION</div>
+        <div class="title-rule"></div>
+        <p class="title-copy">The sky is not the limit.<br />It is only the next floor.</p>
+        <div class="title-actions">
+          <button id="start-btn" class="btn-primary" disabled>
+            <span class="btn-glyph">▸</span>
+            <span class="btn-label">LINK START</span>
+            <span class="btn-shine"></span>
+          </button>
+          <button id="howto-btn" class="btn-secondary">HOW TO PLAY</button>
+        </div>
+        <div class="title-meta">
+          <div><span>PLAYER</span><b>KIRITO</b></div>
+          <div><span>LEVEL</span><b>78</b></div>
+          <div><span>WEAPONS</span><b>DUAL BLADES</b></div>
+        </div>
+      </div>
+
+      <div class="title-right">
+        <div class="world-status">
+          <div class="world-status-head"><span class="pulse-dot"></span> WORLD STATUS <b>ONLINE</b></div>
+          <div class="world-stat"><span>FLOOR</span><div class="world-bar"><i style="width:100%"></i></div><b>75</b></div>
+          <div class="world-stat"><span>PLAYERS</span><div class="world-bar"><i style="width:62%"></i></div><b>6,214</b></div>
+          <div class="world-stat"><span>GATE</span><div class="world-bar gate"><i style="width:88%"></i></div><b>OPEN</b></div>
+        </div>
+        <div class="title-credit">A FAN-MADE 3D TRIBUTE</div>
+      </div>
+
+      <div class="title-bottom">
+        <span>RECOMMENDED: HEADPHONES</span>
+        <span class="title-sep">◆</span>
+        <span>KEYBOARD + MOUSE / TOUCH</span>
+        <span class="title-sep">◆</span>
+        <span>BUILD 01.75</span>
+      </div>
+    </div>
+
+    <!-- In-game HUD -->
+    <div id="hud" class="hidden">
+      <div class="hud-corner hud-corner-tl"></div>
+      <div class="hud-corner hud-corner-tr"></div>
+      <div class="hud-corner hud-corner-bl"></div>
+      <div class="hud-corner hud-corner-br"></div>
+
+      <section class="player-panel">
+        <div class="player-avatar">
+          <canvas id="portrait" width="128" height="128"></canvas>
+          <div class="avatar-ring"></div>
+          <div class="avatar-level">78</div>
+        </div>
+        <div class="player-vitals">
+          <div class="player-name-row"><span class="player-name">KIRITO</span><span class="player-class">SWORDSMAN OF THE BLACK WIND</span></div>
+          <div class="bar hp-bar"><div id="hp-fill" class="bar-fill"></div><div class="bar-sheen"></div><span id="hp-text">100 / 100</span></div>
+          <div class="bar stamina-bar"><div id="stamina-fill" class="bar-fill"></div><span>STAMINA</span></div>
+        </div>
+      </section>
+
+      <section id="wave-panel" class="wave-panel">
+        <div class="wave-label">CURRENT INSTANCE</div>
+        <div class="wave-main"><span id="wave-number">WAVE I</span><b id="enemy-count">3 REMAIN</b></div>
+        <div class="wave-timer"><span id="run-timer">00:00</span><i>TIME</i></div>
+      </section>
+
+      <section id="boss-panel" class="boss-panel hidden">
+        <div class="boss-title"><span>FLOOR GUARDIAN</span><b>THE AINCRAD WARDEN</b><i>LV. 82</i></div>
+        <div class="boss-bar"><div id="boss-fill"></div><div class="boss-bar-ticks"></div><div id="boss-damage"></div></div>
+        <div class="boss-phase"><span id="boss-phase-label">PHASE I</span><span id="boss-hp-text">700 / 700</span></div>
+      </section>
+
+      <section class="radar-panel">
+        <div class="radar-head"><span>LOCAL MAP</span><b>F75</b></div>
+        <div class="radar-wrap"><canvas id="minimap" width="240" height="240"></canvas><div class="radar-sweep"></div><div class="radar-cross"></div></div>
+      </section>
+
+      <div id="lock-reticle" class="lock-reticle hidden"><span></span><i></i><b></b></div>
+      <div id="crosshair" class="crosshair"><i></i><i></i></div>
+
+      <div id="combo-panel" class="combo-panel">
+        <div id="combo-number" class="combo-number">0</div>
+        <div class="combo-meta"><b>HIT</b><span>COMBO</span></div>
+      </div>
+
+      <div id="notice" class="notice"><span id="notice-kicker">SYSTEM</span><b id="notice-text">WAVE I</b><i id="notice-sub">HOSTILES DETECTED</i></div>
+
+      <section class="skill-panel">
+        <div id="skill-orb" class="skill-orb">
+          <svg viewBox="0 0 100 100" aria-hidden="true">
+            <circle class="orb-track" cx="50" cy="50" r="44"></circle>
+            <circle id="skill-ring" class="orb-progress" cx="50" cy="50" r="44"></circle>
+            <path class="orb-swords" d="M38 22 42 58 38 72 34 58ZM62 22 66 58 62 72 58 58Z" />
+            <path class="orb-cross" d="M28 48h44M32 55l18 20 18-20" />
+          </svg>
+          <div id="skill-ready" class="skill-ready">READY</div>
+        </div>
+        <div class="skill-copy"><span>DUAL ARTS</span><b>STARBURST STREAM</b><i id="skill-hint">CHARGING — 0%</i></div>
+      </section>
+
+      <section id="controls" class="controls-panel">
+        <div><kbd>WASD</kbd><span>MOVE</span></div>
+        <div><kbd>LMB</kbd><span>ATTACK</span></div>
+        <div><kbd>SPACE</kbd><span>DASH</span></div>
+        <div><kbd>Q</kbd><span>DUAL ARTS</span></div>
+        <div><kbd>TAB</kbd><span>LOCK-ON</span></div>
+        <div><kbd>ESC</kbd><span>PAUSE</span></div>
+      </section>
+
+      <div id="damage-layer" class="damage-layer"></div>
+      <div id="enemy-labels" class="enemy-labels"></div>
+      <div id="hit-vignette" class="hit-vignette"></div>
+      <div id="heal-flash" class="heal-flash"></div>
+      <div id="edge-glow" class="edge-glow"></div>
+
+      <!-- Touch controls -->
+      <div id="touch-ui" class="touch-ui">
+        <div id="joystick" class="joystick"><div class="joystick-ring"></div><div id="joystick-knob" class="joystick-knob"></div></div>
+        <div class="touch-actions">
+          <button id="touch-skill" class="touch-btn skill"><span>Q</span><b>DUAL ARTS</b></button>
+          <button id="touch-dash" class="touch-btn dash"><span>⇢</span><b>DASH</b></button>
+          <button id="touch-attack" class="touch-btn attack"><span>⚔</span><b>ATTACK</b></button>
+        </div>
+        <div id="touch-look" class="touch-look"></div>
+      </div>
+    </div>
+
+    <!-- Pause -->
+    <div id="pause-screen" class="modal-screen hidden">
+      <div class="modal-card pause-card">
+        <div class="modal-kicker">SYSTEM MENU</div>
+        <h2>PAUSED</h2>
+        <div class="pause-stats">
+          <div><span>FLOOR</span><b>75</b></div>
+          <div><span>WAVE</span><b id="pause-wave">I / III</b></div>
+          <div><span>TIME</span><b id="pause-time">00:00</b></div>
+        </div>
+        <button id="resume-btn" class="btn-primary compact"><span class="btn-glyph">▸</span><span class="btn-label">RESUME</span></button>
+        <button id="restart-btn" class="btn-secondary">RESTART INSTANCE</button>
+        <div class="pause-hint">ESC TO RETURN</div>
+      </div>
+    </div>
+
+    <!-- How to play -->
+    <div id="howto-screen" class="modal-screen hidden">
+      <div class="modal-card howto-card">
+        <div class="modal-kicker">CARDINAL SYSTEM // TUTORIAL</div>
+        <h2>HOW TO PLAY</h2>
+        <div class="howto-grid">
+          <div><kbd>W A S D</kbd><b>MOVE</b><p>Move relative to the camera. Click an enemy to lock on, or press TAB.</p></div>
+          <div><kbd>MOUSE</kbd><b>LOOK</b><p>Click the arena to capture the mouse. Move to orbit the camera.</p></div>
+          <div><kbd>LEFT CLICK</kbd><b>SWORD SKILL</b><p>Chain three strikes. Each hit builds Dual Arts charge.</p></div>
+          <div><kbd>SPACE</kbd><b>DASH</b><p>Brief invulnerability. Costs stamina. Use it to phase through attacks.</p></div>
+          <div><kbd>Q</kbd><b>STARBURST STREAM</b><p>At full charge, unleash an eight-hit dual-blade finisher.</p></div>
+          <div><kbd>SHIFT</kbd><b>SPRINT</b><p>Hold to close distance. Burns stamina while active.</p></div>
+        </div>
+        <button id="howto-close" class="btn-primary compact"><span class="btn-glyph">▸</span><span class="btn-label">UNDERSTOOD</span></button>
+      </div>
+    </div>
+
+    <!-- End -->
+    <div id="end-screen" class="modal-screen hidden">
+      <div class="end-rays"></div>
+      <div class="modal-card end-card">
+        <div id="end-kicker" class="modal-kicker">SYSTEM ANNOUNCEMENT</div>
+        <h2 id="end-title">FLOOR CLEARED</h2>
+        <p id="end-copy">The gate to the next floor has opened.</p>
+        <div class="end-stats">
+          <div><span>TIME</span><b id="end-time">00:00</b></div>
+          <div><span>MAX COMBO</span><b id="end-combo">0</b></div>
+          <div><span>DAMAGE</span><b id="end-damage">0</b></div>
+          <div><span>HITS TAKEN</span><b id="end-hits">0</b></div>
+        </div>
+        <div id="end-rank" class="end-rank"><span>RANK</span><b>S</b></div>
+        <button id="end-btn" class="btn-primary"><span class="btn-glyph">▸</span><span class="btn-label">RETURN TO TITLE</span></button>
+      </div>
+    </div>
+
+    <div id="toast" class="toast hidden"><span></span><b></b></div>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
